@@ -38,5 +38,6 @@ cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
 echo "-----> Oracle Client Installed"
 
 echo "-----> Running Instant Client Testing"
+cd  $BP_DIR
 sqlplus scott@193.123.60.230:1521/ebsdb
 sqlplus 'select * form ap_suppliers_all'
