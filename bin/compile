@@ -1,47 +1,65 @@
 #!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
 
-set -e
-
-BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 BUILD_DIR=$1
 CACHE_DIR=$2
-CLIENT_BUILD_DIR=$BUILD_DIR/.oracle-build
+ENV_DIR=$3
 
-echo "-----> Installing Oracle Client"
+indent() {
+    echo "       $*" || true
+}
 
-mkdir -p $CLIENT_BUILD_DIR
-yum install -y oracle-nodejs-release-el7 oracle-release-el7
-yum-config-manager --disable ol7_developer_EPEL
-yum install nodejs node-oracledb-node12
-sh -c "echo /usr/lib/oracle/18.3/client64/lib > /etc/ld.so.conf.d/oracle-instantclient.conf"
-ldconfig
-# cd $CLIENT_BUILD_DIR
-# curl -s -S -L https://github.com/PaulCampbell/docker-node-oracle/raw/master/oracle/linux/instantclient-basic-linux.x64-12.1.0.2.0.zip > instantclient-basic-linux.x64-12.1.0.2.0.zip
-# curl -s -S -L https://github.com/PaulCampbell/docker-node-oracle/raw/master/oracle/linux/instantclient-sdk-linux.x64-12.1.0.2.0.zip > instantclient-sdk-linux.x64-12.1.0.2.0.zip
-# unzip instantclient-basic-linux.x64-12.1.0.2.0.zip && rm instantclient-basic-linux.x64-12.1.0.2.0.zip
-# unzip instantclient-sdk-linux.x64-12.1.0.2.0.zip && rm instantclient-sdk-linux.x64-12.1.0.2.0.zip
-# mv instantclient{_12_1,}
-# cd instantclient
-# ln -s libclntsh.so.12.1 libclntsh.so
-# ln -s libocci.so.12.1 libocci.so
+VENDOR_DIR=$BUILD_DIR/vendor
+ORACLE_DIR=$VENDOR_DIR/oracle
+INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_19_3
+PROFILE_D_DIR=$BUILD_DIR/.profile.d
 
-# cat <<EOT > $BP_DIR/export
-# export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient/:$BUILD_DIR/.apt/lib/x86_64-linux-gnu/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-# export OCI_LIB_DIR=$CLIENT_BUILD_DIR/instantclient
-# export OCI_INC_DIR=$CLIENT_BUILD_DIR/instantclient/sdk/include
-# EOT
+BASIC_FILENAME=instantclient-basic-linuxx64.zip
+SDK_FILENAME=instantclient-sdk-linuxx64.zip
 
-# cat $BP_DIR/export
+BASE_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/
 
-# if [ ! -d "$BUILD_DIR/.profile.d" ]; then
-#   mkdir $BUILD_DIR/.profile.d
-# fi
+SDK_ZIP_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip
+BASIC_ZIP_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
+SQL_PLUS_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
+TOOLS_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip
+JDBC_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-jdbc-linuxx64.zip
+ODBC_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-odbc-linuxx64.zip
 
-# cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
 
-echo "-----> Oracle Client Installed"
+if [ ! -f $CACHE_DIR/$BASIC_FILENAME ]; then
+    indent "Downloading $BASIC_FILENAME..."
+    curl -# -o $CACHE_DIR/$BASIC_FILENAME $MIRROR/$BASIC_FILENAME
+fi
 
-echo "-----> Running Instant Client Testing"
-cd $ORACLE_HOME/bin
-sqlplus scott@193.123.60.230:1521/ebsdb
-sqlplus 'select * form ap_suppliers_all'
+if [ ! -f $CACHE_DIR/$SDK_FILENAME ]; then
+    indent "Downloading $SDK_FILENAME..."
+    curl -# -o $CACHE_DIR/$SDK_FILENAME $MIRROR/$SDK_FILENAME
+fi
+
+mkdir -p $ORACLE_DIR
+indent "Extracting $BASIC_FILENAME..."
+unzip -qq $CACHE_DIR/$BASIC_FILENAME -d $ORACLE_DIR
+indent "Extracting $SDK_FILENAME..."
+unzip -qq $CACHE_DIR/$SDK_FILENAME -d $ORACLE_DIR
+
+indent "Symlinking libclntsh.so..."
+ln -sfn libclntsh.so.12.1 $INSTANTCLIENT_DIR/libclntsh.so
+
+export OCI_LIB_DIR=$INSTANTCLIENT_DIR
+export OCI_INC_DIR=$INSTANTCLIENT_DIR/sdk/include
+
+indent "Installing oracledb from npm..."
+cd $BUILD_DIR
+THIS_DIR=`pwd`
+ 
+cd $THIS_DIR
+
+indent "Saving environment setup script..."
+mkdir -p $PROFILE_D_DIR
+cat << EOF > $PROFILE_D_DIR/oracle.sh
+#!/usr/bin/env bash
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$HOME/.apt/lib/x86_64-linux-gnu:$HOME/vendor/oracle/instantclient_19_3"
+EOF
+
+indent "Done."

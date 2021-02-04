@@ -1,0 +1,3 @@
+export LD_LIBRARY_PATH=/Users/scottrollo/Desktop/node-buildpack/node-oracledb-buildpack/test/./../out/build/.oracle-build/instantclient/:/Users/scottrollo/Desktop/node-buildpack/node-oracledb-buildpack/test/./../out/build/.apt/lib/x86_64-linux-gnu/
+export OCI_LIB_DIR=/Users/scottrollo/Desktop/node-buildpack/node-oracledb-buildpack/test/./../out/build/.oracle-build/instantclient
+export OCI_INC_DIR=/Users/scottrollo/Desktop/node-buildpack/node-oracledb-buildpack/test/./../out/build/.oracle-build/instantclient/sdk/include
