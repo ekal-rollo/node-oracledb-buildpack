@@ -45,6 +45,7 @@ export OCI_INC_DIR=$INSTANTCLIENT_DIR/sdk/include
 indent "Installing oracledb from npm..."
 THIS_DIR=`pwd`
 cd $BUILD_DIR
+npm install node-oracledb
 npm install oracledb
 cd $THIS_DIR
 
@@ -52,7 +53,7 @@ indent "Saving environment setup script..."
 mkdir -p $PROFILE_D_DIR
 cat << EOF > $PROFILE_D_DIR/oracle.sh
 #!/usr/bin/env bash
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$HOME/.apt/lib/x86_64-linux-gnu:$HOME/vendor/oracle/instantclient_21_1"
+export LD_LIBRARY_PATH=/vendor/oracle/instantclient_21_1:$LD_LIBRARY_PATH"
 EOF
 
 indent "Done."
