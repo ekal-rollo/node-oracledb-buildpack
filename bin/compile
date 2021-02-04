@@ -37,7 +37,7 @@ indent "Extracting $SDK_FILENAME..."
 unzip -qq $CACHE_DIR/$SDK_FILENAME -d $ORACLE_DIR
 
 indent "Symlinking libclntsh.so..."
-ln -s libclntsh.so.12.1 $INSTANTCLIENT_DIR/libclntsh.so
+ln -s libclntsh.so.21.1 $INSTANTCLIENT_DIR/libclntsh.so
 
 export OCI_LIB_DIR=$INSTANTCLIENT_DIR
 export OCI_INC_DIR=$INSTANTCLIENT_DIR/sdk/include
