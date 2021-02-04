@@ -35,7 +35,7 @@ fi
 
 cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
 export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient_21_1/
-echo "LD LIB PATH" $LD_LIBRARY_PATH
+echo "LD LIB PATH updated" $LD_LIBRARY_PATH
 echo "BP DIR" $BP_DIR
 echo "-----> Oracle Client Installed"
 
