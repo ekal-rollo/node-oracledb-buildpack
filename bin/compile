@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+indent() { 
+    echo "       $*" || true
+}
+
+VENDOR_DIR=$BUILD_DIR/vendor
+ORACLE_DIR=$VENDOR_DIR/oracle
+INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_21_1
+PROFILE_D_DIR=$BUILD_DIR/.profile.d
+
+BASIC_FILENAME=instantclient-basic-linuxx64.zip
+SDK_FILENAME=instantclient-sdk-linuxx64.zip
+
+MIRROR_BASIC=https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
+MIRROR_SDK=https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip
+
+if [ ! -f $CACHE_DIR/$BASIC_FILENAME ]; then
+    indent "Downloading $BASIC_FILENAME..."
+    wget -O $CACHE_DIR/$BASIC_FILENAME $MIRROR_BASIC
+fi
+
+if [ ! -f $CACHE_DIR/$SDK_FILENAME ]; then
+    indent "Downloading $SDK_FILENAME..."
+    wget -O $CACHE_DIR/$SDK_FILENAME $MIRROR_SDK
+fi
+
+mkdir -p $ORACLE_DIR
+indent "Extracting $BASIC_FILENAME..."
+unzip -qq $CACHE_DIR/$BASIC_FILENAME -d $ORACLE_DIR
+indent "Extracting $SDK_FILENAME..."
+unzip -qq $CACHE_DIR/$SDK_FILENAME -d $ORACLE_DIR
+
+indent "Symlinking libclntsh.so..."
+ln -s libclntsh.so.12.1 $INSTANTCLIENT_DIR/libclntsh.so
+
+export OCI_LIB_DIR=$INSTANTCLIENT_DIR
+export OCI_INC_DIR=$INSTANTCLIENT_DIR/sdk/include
+
+indent "Installing oracledb from npm..."
+THIS_DIR=`pwd`
+cd $BUILD_DIR
+npm install oracledb
+cd $THIS_DIR
+
+indent "Saving environment setup script..."
+mkdir -p $PROFILE_D_DIR
+cat << EOF > $PROFILE_D_DIR/oracle.sh
+#!/usr/bin/env bash
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$HOME/.apt/lib/x86_64-linux-gnu:$HOME/vendor/oracle/instantclient_21_1"
+EOF
+
+indent "Done."

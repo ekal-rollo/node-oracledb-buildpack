@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+TEST_DIR=`pwd`/`dirname $0`
+OUT_DIR=$TEST_DIR/../out
+BUILD_DIR=$OUT_DIR/build
+CACHE_DIR=$OUT_DIR/cache
+ENV_DIR=$OUT_DIR/env
+
+mkdir -p $OUT_DIR
+mkdir -p $BUILD_DIR
+mkdir -p $CACHE_DIR
+mkdir -p $ENV_DIR
+
+rm -fr $BUILD_DIR/*
+rm -fr $ENV_DIR/*
+
+$TEST_DIR/../bin/compile $BUILD_DIR $CACHE_DIR $ENV_DIR
