@@ -22,12 +22,12 @@ MIRROR_SDK=https://download.oracle.com/otn_software/linux/instantclient/instantc
 
 if [ ! -f $CACHE_DIR/$BASIC_FILENAME ]; then
     indent "Downloading $BASIC_FILENAME..."
-    wget -O $CACHE_DIR/$BASIC_FILENAME $MIRROR_BASIC
+    curl -o $CACHE_DIR/$BASIC_FILENAME $MIRROR_BASIC
 fi
 
 if [ ! -f $CACHE_DIR/$SDK_FILENAME ]; then
     indent "Downloading $SDK_FILENAME..."
-    wget -O $CACHE_DIR/$SDK_FILENAME $MIRROR_SDK
+    curl -o $CACHE_DIR/$SDK_FILENAME $MIRROR_SDK
 fi
 
 mkdir -p $ORACLE_DIR
