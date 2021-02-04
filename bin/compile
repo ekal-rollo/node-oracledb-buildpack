@@ -22,9 +22,9 @@ ln -sfn libclntsh.so.21.1 libclntsh.so
 ln -sfn libocci.so.21.1 libocci.so
 
 cat <<EOT > $BP_DIR/export
-export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient/:$BUILD_DIR/.apt/lib/x86_64-linux-gnu/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-export OCI_LIB_DIR=$CLIENT_BUILD_DIR/instantclient
-export OCI_INC_DIR=$CLIENT_BUILD_DIR/instantclient/sdk/include
+export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient_21_1/:$BUILD_DIR/.apt/lib/x86_64-linux-gnu/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export OCI_LIB_DIR=$CLIENT_BUILD_DIR/instantclient_21_1
+export OCI_INC_DIR=$CLIENT_BUILD_DIR/instantclient_21_1/sdk/include
 EOT
 
 cat $BP_DIR/export
