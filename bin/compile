@@ -16,10 +16,10 @@ curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/insta
 curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip > instantclient-sdk-linuxx64.zip
 unzip instantclient-basic-linuxx64.zip && rm instantclient-basic-linuxx64.zip
 unzip instantclient-sdk-linuxx64.zip && rm instantclient-sdk-linuxx64.zip
-mv instantclient{_21_1,}
-cd instantclient
-ln -s libclntsh.so.21.1 libclntsh.so
-ln -s libocci.so.21.1 libocci.so
+
+cd instantclient_21_1
+ln -sfn libclntsh.so.21.1 libclntsh.so
+ln -sfn libocci.so.21.1 libocci.so
 
 cat <<EOT > $BP_DIR/export
 export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient/:$BUILD_DIR/.apt/lib/x86_64-linux-gnu/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
