@@ -5,61 +5,55 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
-indent() {
+indent() { 
     echo "       $*" || true
 }
 
 VENDOR_DIR=$BUILD_DIR/vendor
 ORACLE_DIR=$VENDOR_DIR/oracle
-INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_19_3
+INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_21_1
 PROFILE_D_DIR=$BUILD_DIR/.profile.d
 
 BASIC_FILENAME=instantclient-basic-linuxx64.zip
 SDK_FILENAME=instantclient-sdk-linuxx64.zip
+SQL_PLUS_FILENAME=instantclient-sqlplus-linuxx64.zip
+ODBC_FILENAME=instantclient-odbc-linuxx64.zip
+JDBC_SUPPLIMENT=instantclient-jdbc-linuxx64.zip
 
-BASE_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/
+MIRROR=https://download.oracle.com/otn_software/linux/instantclient/
 
-SDK_ZIP_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip
-BASIC_ZIP_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
-SQL_PLUS_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
-TOOLS_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip
-JDBC_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-jdbc-linuxx64.zip
-ODBC_MIRROR=https://download.oracle.com/otn_software/linux/instantclient/instantclient-odbc-linuxx64.zip
-
-
-if [ ! -f $CACHE_DIR/$BASIC_FILENAME ]; then
-    indent "Downloading $BASIC_FILENAME..."
-    curl -# -o $CACHE_DIR/$BASIC_FILENAME $MIRROR/$BASIC_FILENAME
-fi
-
-if [ ! -f $CACHE_DIR/$SDK_FILENAME ]; then
-    indent "Downloading $SDK_FILENAME..."
-    curl -# -o $CACHE_DIR/$SDK_FILENAME $MIRROR/$SDK_FILENAME
-fi
 
 mkdir -p $ORACLE_DIR
-indent "Extracting $BASIC_FILENAME..."
-unzip -qq $CACHE_DIR/$BASIC_FILENAME -d $ORACLE_DIR
-indent "Extracting $SDK_FILENAME..."
-unzip -qq $CACHE_DIR/$SDK_FILENAME -d $ORACLE_DIR
 
-indent "Symlinking libclntsh.so..."
-ln -sfn libclntsh.so.12.1 $INSTANTCLIENT_DIR/libclntsh.so
+if [ ! -f $ORACLE_DIR/$BASIC_FILENAME ]; then
+    indent "Downloading $BASIC_FILENAME..."
+    curl -# -o $ORACLE_DIR/$BASIC_FILENAME $MIRROR/$BASIC_FILENAME
+    indent "Extracting $BASIC_FILENAME..."
+    unzip -qq $ORACLE_DIR/$BASIC_FILENAME -d $ORACLE_DIR
+fi
 
+if [ ! -f $ORACLE_DIR/$SDK_FILENAME ]; then
+    indent "Downloading $SDK_FILENAME..."
+    curl -# -o $ORACLE_DIR/$SDK_FILENAME $MIRROR/$SDK_FILENAME
+    indent "Extracting $SDK_FILENAME..."
+    unzip -qq $ORACLE_DIR/$SDK_FILENAME -d $ORACLE_DIR
+fi
+
+if [ ! -f $ORACLE_DIR/$SQL_PLUS_FILENAME ]; then
+    indent "Downloading $SQL_PLUS_FILENAME..."
+    curl -# -o $ORACLE_DIR/$SQL_PLUS_FILENAME $MIRROR/$SQL_PLUS_FILENAME
+    indent "Extracting $SQL_PLUS_FILENAME..."
+    unzip -qq $ORACLE_DIR/$SQL_PLUS_FILENAME -d $ORACLE_DIR
+fi
+
+indent "Symlinking libclntsh.so.21.1"
+echo "INSTANT CLIENT DIRECTORY: " $INSTANTCLIENT_DIR
+cd $INSTANTCLIENT_DIR
+ln -s libclntsh.so.21.1 libclntsh.so
+ln -s libocci.so.21.1 libocci.so
+export PATH=/opt/oracle/instantclient_21_1:$PATH
 export OCI_LIB_DIR=$INSTANTCLIENT_DIR
 export OCI_INC_DIR=$INSTANTCLIENT_DIR/sdk/include
-
-indent "Installing oracledb from npm..."
-cd $BUILD_DIR
-THIS_DIR=`pwd`
- 
-cd $THIS_DIR
-
-indent "Saving environment setup script..."
-mkdir -p $PROFILE_D_DIR
-cat << EOF > $PROFILE_D_DIR/oracle.sh
-#!/usr/bin/env bash
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$HOME/.apt/lib/x86_64-linux-gnu:$HOME/vendor/oracle/instantclient_19_3"
-EOF
-
+export LD_LIBRARY_PATH=$INSTANTCLIENT_DIR:$LD_LIBRARY_PATH
+sqlplus
 indent "Done."
