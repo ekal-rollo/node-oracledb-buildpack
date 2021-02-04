@@ -34,7 +34,8 @@ if [ ! -d "$BUILD_DIR/.profile.d" ]; then
 fi
 
 cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
-
+echo "LD LIB PATH" $LD_LIBRARY_PATH
+echo "BP DIR" $BP_DIR
 echo "-----> Oracle Client Installed"
 
 # #!/usr/bin/env bash
