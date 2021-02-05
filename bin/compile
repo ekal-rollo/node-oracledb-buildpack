@@ -1,43 +1,108 @@
 #!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
 
-set -e
-
-BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 BUILD_DIR=$1
 CACHE_DIR=$2
-CLIENT_BUILD_DIR=$BUILD_DIR/.oracle-build
+ENV_DIR=$3
 
-echo "-----> Installing Oracle Client"
+indent() {
+    echo "       $*" || true
+}
 
-mkdir -p $CLIENT_BUILD_DIR
+VENDOR_DIR=$BUILD_DIR/vendor
+ORACLE_DIR=$VENDOR_DIR/oracle
+INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_12_2
+PROFILE_D_DIR=$BUILD_DIR/.profile.d
 
-cd $CLIENT_BUILD_DIR
-curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip > instantclient-basic-linuxx64.zip
-curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip > instantclient-sdk-linuxx64.zip
-unzip instantclient-basic-linuxx64.zip && rm instantclient-basic-linuxx64.zip
-unzip instantclient-sdk-linuxx64.zip && rm instantclient-sdk-linuxx64.zip
+BASIC_FILENAME=instantclient-basic-linux.x64-12.2.0.1.0.zip
+SDK_FILENAME=instantclient-sdk-linux.x64-12.2.0.1.0.zip
 
-cd instantclient_21_1
-ln -sfn libclntsh.so.21.1 libclntsh.so
-ln -sfn libocci.so.21.1 libocci.so
+MIRROR_BASIC=https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
+MIRROR_SDK=https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip
 
-cat <<EOT > $BP_DIR/export
-export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient_21_1/:$BUILD_DIR/.apt/lib/x86_64-linux-gnu/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-export OCI_LIB_DIR=$CLIENT_BUILD_DIR/instantclient_21_1
-export OCI_INC_DIR=$CLIENT_BUILD_DIR/instantclient_21_1/sdk/include
-EOT
-
-cat $BP_DIR/export
-
-if [ ! -d "$BUILD_DIR/.profile.d" ]; then
-  mkdir $BUILD_DIR/.profile.d
+if [ ! -f $CACHE_DIR/$BASIC_FILENAME ]; then
+    indent "Downloading $BASIC_FILENAME..."
+    wget -O $CACHE_DIR/$BASIC_FILENAME $MIRROR_BASIC
 fi
 
-cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
-export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient_21_1/
-echo "LD LIB PATH updated" $LD_LIBRARY_PATH
-echo "BP DIR" $BP_DIR
-echo "-----> Oracle Client Installed"
+if [ ! -f $CACHE_DIR/$SDK_FILENAME ]; then
+    indent "Downloading $SDK_FILENAME..."
+    wget -O $CACHE_DIR/$SDK_FILENAME $MIRROR_SDK
+fi
+
+mkdir -p $ORACLE_DIR
+indent "Extracting $BASIC_FILENAME..."
+unzip -qq $CACHE_DIR/$BASIC_FILENAME -d $ORACLE_DIR
+indent "Extracting $SDK_FILENAME..."
+unzip -qq $CACHE_DIR/$SDK_FILENAME -d $ORACLE_DIR
+
+indent "Symlinking libclntsh.so..."
+ln -s libclntsh.so.12.1 $INSTANTCLIENT_DIR/libclntsh.so
+
+export OCI_LIB_DIR=$INSTANTCLIENT_DIR
+export OCI_INC_DIR=$INSTANTCLIENT_DIR/sdk/include
+
+indent "Installing oracledb from npm..."
+THIS_DIR=`pwd`
+cd $BUILD_DIR
+npm install oracledb
+cd $THIS_DIR
+
+indent "Saving environment setup script..."
+mkdir -p $PROFILE_D_DIR
+cat << EOF > $PROFILE_D_DIR/oracle.sh
+#!/usr/bin/env bash
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$HOME/.apt/lib/x86_64-linux-gnu:$HOME/vendor/oracle/instantclient_12_2"
+EOF
+
+indent "Done."
+
+
+
+
+
+
+
+#!/usr/bin/env bash
+
+# set -e
+
+# BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+# BUILD_DIR=$1
+# CACHE_DIR=$2
+# CLIENT_BUILD_DIR=$BUILD_DIR/.oracle-build
+
+# echo "-----> Installing Oracle Client"
+
+# mkdir -p $CLIENT_BUILD_DIR
+
+# cd $CLIENT_BUILD_DIR
+# curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip > instantclient-basic-linuxx64.zip
+# curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip > instantclient-sdk-linuxx64.zip
+# unzip instantclient-basic-linuxx64.zip && rm instantclient-basic-linuxx64.zip
+# unzip instantclient-sdk-linuxx64.zip && rm instantclient-sdk-linuxx64.zip
+
+# cd instantclient_21_1
+# ln -sfn libclntsh.so.21.1 libclntsh.so
+# ln -sfn libocci.so.21.1 libocci.so
+
+# cat <<EOT > $BP_DIR/export
+# export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient_21_1/:$BUILD_DIR/.apt/lib/x86_64-linux-gnu/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+# export OCI_LIB_DIR=$CLIENT_BUILD_DIR/instantclient_21_1
+# export OCI_INC_DIR=$CLIENT_BUILD_DIR/instantclient_21_1/sdk/include
+# EOT
+
+# cat $BP_DIR/export
+
+# if [ ! -d "$BUILD_DIR/.profile.d" ]; then
+#   mkdir $BUILD_DIR/.profile.d
+# fi
+
+# cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
+# export LD_LIBRARY_PATH=$CLIENT_BUILD_DIR/instantclient_21_1/
+# echo "LD LIB PATH updated" $LD_LIBRARY_PATH
+# echo "BP DIR" $BP_DIR
+# echo "-----> Oracle Client Installed"
 
 # #!/usr/bin/env bash
 # # bin/compile <build-dir> <cache-dir> <env-dir>
