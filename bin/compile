@@ -36,6 +36,7 @@ unzip -qq $CACHE_DIR/$BASIC_FILENAME -d $ORACLE_DIR
 indent "Extracting $SDK_FILENAME..."
 unzip -qq $CACHE_DIR/$SDK_FILENAME -d $ORACLE_DIR
 
+scho "instant client dir: " $INSTANTCLIENT_DIR
 indent "Symlinking libclntsh.so..."
 ln -s libclntsh.so.12.1 $INSTANTCLIENT_DIR/libclntsh.so
 
