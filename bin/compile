@@ -18,6 +18,8 @@
 
 
  cd $ENV_DIR
+ ech "ENV DIR LOCATION"
+ ls
 npm install oracledb 
 # cd node_modules/oracledb/build/release
 # curl -s -S -L https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip > instantclient-basic-linuxx64.zip
