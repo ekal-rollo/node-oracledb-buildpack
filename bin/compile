@@ -16,9 +16,9 @@
 # BASIC_FILENAME=instantclient-basic-linuxx64.zip
 # MIRROR_BASIC=https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
 
-
- cd $ENV_DIR
- ech "ENV DIR LOCATION"
+  NODE_MODULES_LOCATION='~/app'
+ cd $NODE_MODULES_LOCATION
+ echo "ENV DIR LOCATION"
  ls
 npm install oracledb 
 # cd node_modules/oracledb/build/release
